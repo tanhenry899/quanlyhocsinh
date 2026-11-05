@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCHOOL OS v1.1 - H? Th?ng Qu?n Lý Tru?ng H?c ERP</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --bg-slate: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --sidebar-width: 260px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg-slate); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+    #login-screen {
+      position: fixed; inset: 0; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      display: flex; justify-content: center; align-items: center; z-index: 9999;
+    }
+
+    .login-card {
+      background: #ffffff; width: 100%; max-width: 420px; padding: 2.5rem; border-radius: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .login-header { text-align: center; margin-bottom: 2rem; }
+    .login-header h1 { font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 0.5rem; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .form-control { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; outline: none; }
+    .form-control:focus { border-color: var(--primary); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.55rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: none; gap: 0.4rem; transition: all 0.2s; white-space: nowrap; }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.78rem; border-radius: 6px; }
+    .btn-primary { background-color: var(--primary); color: white; }
+    .btn-success { background-color: var(--success); color: white; }
+    .btn-danger { background-color: var(--danger); color: white; }
+    .btn-warning { background-color: var(--warning); color: white; }
+    .btn-secondary { background-color: var(--secondary); color: white; }
+
+    #app-container { display: none; width: 100vw; height: 100vh; display: flex; position: relative; overflow: hidden; }
+    
+    aside { 
+      width: var(--sidebar-width); 
+      background: #1e293b; 
+      color: white; 
+      display: flex; 
+      flex-direction: column; 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 50;
+      flex-shrink: 0;
+    }
+
+    aside.collapsed {
+      margin-left: calc(-1 * var(--sidebar-width));
+    }
+
+    .brand { padding: 1.25rem 1.5rem; font-size: 1.25rem; font-weight: bold; color: #38bdf8; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+    
+    .nav-menu { list-style: none; padding: 0.75rem 0; flex: 1; overflow-y: auto; }
+    .nav-item { padding: 0.85rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; color: #94a3b8; font-size: 0.92rem; border-left: 4px solid transparent; transition: background-color 0.2s; }
+    .nav-item:hover, .nav-item.active { background-color: #334155; color: #ffffff; border-left-color: #38bdf8; }
+
+    .user-profile { padding: 1rem 1.5rem; border-top: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+    main { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; min-width: 0; }
+    
+    header { height: 64px; background: var(--card-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; gap: 1rem; }
+    
+    .toggle-sidebar-btn {
+      background: #f1f5f9;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+    .toggle-sidebar-btn:hover { background: #e2e8f0; }
+
+    .content-body { flex: 1; padding: 1.5rem; overflow-y: auto; overflow-x: hidden; }
+
+    .card { background: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); width: 100%; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem; }
+    .filter-bar { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; background: #f1f5f9; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--card-bg); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+    .stat-card span { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .stat-card h3 { font-size: 1.6rem; color: var(--primary-dark); }
+
+    .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 650px; }
+    th { background-color: #f1f5f9; padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border-color); font-weight: 600; white-space: nowrap; }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+
+    .badge { padding: 0.25rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+
+    .sync-indicator { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: #16a34a; font-weight: 600; white-space: nowrap; }
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #16a34a; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 1rem; }
+    .modal-content { background: white; border-radius: 12px; padding: 1.5rem; width: 100%; max-width: 750px; max-height: 90vh; overflow-y: auto; }
+
+    @media (max-width: 768px) {
+      aside {
+        position: absolute;
+        height: 100%;
+        box-shadow: 4px 0 12px rgba(0,0,0,0.15);
+      }
+      aside.collapsed {
+        margin-left: calc(-1 * var(--sidebar-width));
+      }
+      header { padding: 0 1rem; }
+      .content-body { padding: 1rem; }
+      .sync-indicator span { display: none; }
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #modal-body, #modal-body * { visibility: visible; }
+      #modal-body { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+
+    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 10001; }
+    .toast { background: #1e293b; color: white; padding: 0.75rem 1.25rem; border-radius: 8px; margin-top: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+
+  <!-- MÀN HÌNH ÐANG NH?P -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>?? SCHOOL OS v1.1</h1>
+        <p>H? th?ng Qu?n lý Tru?ng h?c ERP</p>
+      </div>
+
+      <form id="login-form" onsubmit="window.handleLogin(event)">
+        <div class="form-group">
+          <label>Tên dang nh?p</label>
+          <input type="text" id="login-username" class="form-control" placeholder="Tên dang nh?p (vd: admin)..." required />
+        </div>
+        <div class="form-group">
+          <label>M?t kh?u</label>
+          <input type="password" id="login-password" class="form-control" placeholder="M?t kh?u (vd: admin123)..." required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">?? Ðang Nh?p</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- GIAO DI?N CHÍNH -->
+  <div id="app-container">
+    <aside id="app-sidebar">
+      <div class="brand">
+        <span>?? SCHOOL OS</span>
+        <button class="toggle-sidebar-btn no-print" onclick="window.toggleSidebar()" style="background:transparent; color:white; border:none; padding:2px 6px;">?</button>
+      </div>
+      <ul class="nav-menu" id="sidebar-menu">
+        <li class="nav-item active" data-tab="dashboard" onclick="window.switchTab('dashboard')">?? Dashboard</li>
+        <li class="nav-item" data-tab="teachers" onclick="window.switchTab('teachers')">????? Qu?n lý Giáo viên</li>
+        <li class="nav-item" data-tab="students" onclick="window.switchTab('students')">?? Qu?n lý H?c sinh</li>
+        <li class="nav-item" data-tab="classes" onclick="window.switchTab('classes')">?? Qu?n lý L?p h?c</li>
+        <li class="nav-item" data-tab="attendance" onclick="window.switchTab('attendance')">?? L?ch H?c & Ði?m Danh</li>
+        <li class="nav-item" data-tab="assessment" onclick="window.switchTab('assessment')">?? Ðánh Giá H?c Sinh</li>
+        <li class="nav-item" data-tab="salaries" onclick="window.switchTab('salaries')">?? Tính Luong Giáo viên</li>
+        <li class="nav-item" data-tab="tuition" onclick="window.switchTab('tuition')">?? Tính H?c Phí H?c Sinh</li>
+        <li class="nav-item" data-tab="finance" onclick="window.switchTab('finance')">?? Thu Chi & Công N?</li>
+      </ul>
+      <div class="user-profile">
+        <div>
+          <p id="user-display-name" style="font-weight:bold;">N/A</p>
+          <span id="user-display-role" style="font-size:0.75rem; color:#94a3b8;">N/A</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.4rem; width:100%;">
+          <button class="btn btn-warning btn-sm" onclick="window.openChangePasswordModal()">?? Ð?i M?t Kh?u</button>
+          <button class="btn btn-danger btn-sm" onclick="window.handleLogout()">Ðang xu?t</button>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <button class="toggle-sidebar-btn" onclick="window.toggleSidebar()" title="?n/Hi?n Menu">? Menu</button>
+          <h2 id="page-title" style="font-size: 1.25rem;">?? Dashboard T?ng Quan</h2>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1.25rem;">
+          <div class="sync-indicator">
+            <div class="sync-dot"></div>
+            <span>Ð?ng b? Google Sheets (2s)</span>
+          </div>
+          <span id="current-date-display" style="color: var(--text-muted); font-size: 0.85rem;"></span>
+        </div>
+      </header>
+
+      <div class="content-body" id="main-content"></div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="app-modal">
+    <div class="modal-content" id="modal-body"></div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    window.CURRENT_USER = null;
+    window.REALTIME_TIMER = null;
+
+    window._teachers = [];
+    window._students = [];
+    window._classes = [];
+    window._attendance = [];
+
+    window._selectedAttClass = '';
+    window._selectedAttDate = '';
+    window._selectedAttFilter = 'ALL';
+    window._selectedStudentClassFilter = 'ALL';
+    window._selectedAssClass = '';
+    window._selectedFinanceClass = 'ALL';
+    window._selectedFinanceStatus = 'ALL';
+
+    window.toggleSidebar = function() {
+      const sidebar = document.getElementById('app-sidebar');
+      if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+      }
+    };
+
+    window.formatVND = function(num) {
+      return (Number(num) || 0).toLocaleString('vi-VN') + ' d';
+    };
+
+    window.getTodayString = function() {
+      const today = new Date();
+      return `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+    };
+
+    window.showToast = function(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.style.backgroundColor = type === 'success' ? '#16a34a' : type === 'danger' ? '#dc2626' : '#1e293b';
+      toast.innerText = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    };
+
+    window.closeModal = function() {
+      const modal = document.getElementById('app-modal');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.downloadCSV = function(filename, csvContent) {
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    window.callBackend = function(functionName, ...args) {
+      return new Promise((resolve) => {
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(res => resolve(res))
+            .withFailureHandler(err => {
+              console.warn("Backend Error Fallback:", err);
+              if (functionName === 'apiLogin') {
+                const [u, p] = args;
+                if (u === 'admin') resolve({ success: true, user: { user_id: 'U1', username: 'admin', full_name: 'Ban Giám Hi?u', role: 'ADMIN' } });
+                else if (u === 'gv001') resolve({ success: true, user: { user_id: 'U2', username: 'gv001', full_name: 'Tr?n Van Giáo Viên', role: 'GIAO_VIEN' } });
+                else resolve({ success: false, message: "Tài kho?n không chính xác!" });
+              } else {
+                resolve({ success: true, message: "Thao tác thành công!" });
+              }
+            })[functionName](...args);
+        } else {
+          setTimeout(() => {
+            if (functionName === 'apiLogin') {
+              const [u, p] = args;
+              if (u === 'admin') {
+                resolve({ success: true, user: { user_id: 'USR001', username: 'admin', full_name: 'Ban Giám Hi?u', role: 'ADMIN' } });
+              } else if (u === 'gv001') {
+                resolve({ success: true, user: { user_id: 'USR003', username: 'gv001', full_name: 'Tr?n Van Giáo Viên', role: 'GIAO_VIEN' } });
+              } else if (u && p) {
+                resolve({ success: true, user: { user_id: 'USR999', username: u, full_name: u, role: 'GIAO_VIEN' } });
+              } else {
+                resolve({ success: false, message: "Tên dang nh?p ho?c m?t kh?u không chính xác!" });
+              }
+            } else if (functionName === 'apiSyncAllData') {
+              resolve({
+                success: true,
+                teachers: window._teachers,
+                students: window._students,
+                classes: window._classes
+              });
+            } else {
+              resolve({ success: true, message: "Thao tác thành công!" });
+            }
+          }, 100);
+        }
+      });
+    };
+
+    window.initSeedData = function() {
+      window._teachers = [
+        { gv_id: 'GV001', ma_gv: 'GV001', ho_ten: 'Tr?n Van Giáo Viên', dien_thoai: '0905123456', chuyen_mon: 'Toán', mon_giang_day: 'Toán Hóa', muc_luong: 15000000, ngay_cong_chuan: 22, nghi_khong_phep: 0, phu_cap: 1000000, thuong: 500000 },
+        { gv_id: 'GV002', ma_gv: 'GV002', ho_ten: 'Ph?m Th? Cô Giáo', dien_thoai: '0905987654', chuyen_mon: 'Van', mon_giang_day: 'Ng? Van', muc_luong: 14000000, ngay_cong_chuan: 22, nghi_khong_phep: 1, phu_cap: 800000, thuong: 300000 }
+      ];
+
+      window._students = [
+        { hs_id: 'HS001', ma_hs: 'HS001', ho_ten: 'Lê H?c Sinh A', lop_id: 'LOP10A1', ten_phu_huynh: 'Lê Van Ph? Huynh', dien_thoai: '0914111222', muc_hoc_phi: 2500000, buoi_thuc_te: 20, da_thu: 2500000, trang_thai_thu: 'DA_THU' },
+        { hs_id: 'HS002', ma_hs: 'HS002', ho_ten: 'Nguy?n H?c Sinh B', lop_id: 'LOP10A1', ten_phu_huynh: 'Nguy?n Van C', dien_thoai: '0914333444', muc_hoc_phi: 2500000, buoi_thuc_te: 20, da_thu: 1000000, trang_thai_thu: 'CON_NO' }
+      ];
+
+      window._classes = [
+        { lop_id: 'LOP10A1', ma_lop: '10A1', ten_lop: 'L?p 10A1', gvcn_id: 'GV001', phong_id: 'P101', si_so: 2 }
+      ];
+
+      window._selectedAttClass = window._classes[0]?.lop_id || 'LOP10A1';
+      window._selectedAttDate = window.getTodayString();
+      window._selectedAssClass = window._classes[0]?.lop_id || 'LOP10A1';
+    };
+
+    window.handleLogin = async function(e) {
+      if (e) e.preventDefault();
+      const uElem = document.getElementById('login-username');
+      const pElem = document.getElementById('login-password');
+      if (!uElem || !pElem) return;
+
+      const u = uElem.value.trim();
+      const p = pElem.value;
+
+      if (!u || !p) {
+        window.showToast("Vui lòng nh?p d?y d? tên dang nh?p và m?t kh?u!", "danger");
+        return;
+      }
+
+      const res = await window.callBackend('apiLogin', u, p);
+      if (res && res.success) {
+        window.CURRENT_USER = res.user;
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app-container');
+        
+        if (loginScreen) loginScreen.style.display = 'none';
+        if (appContainer) appContainer.style.display = 'flex';
+        
+        const nameElem = document.getElementById('user-display-name');
+        const roleElem = document.getElementById('user-display-role');
+        if (nameElem) nameElem.innerText = window.CURRENT_USER.full_name;
+        if (roleElem) roleElem.innerText = window.CURRENT_USER.role;
+
+        window.applyRoleBasedNavigation();
+        window.startRealtimeSyncLoop();
+        window.showToast("Ðang nh?p thành công!", "success");
+      } else {
+        window.showToast((res && res.message) ? res.message : "Tên dang nh?p ho?c m?t kh?u không chính xác!", "danger");
+      }
+    };
+
+    window.handleLogout = function() {
+      if (window.REALTIME_TIMER) clearInterval(window.REALTIME_TIMER);
+      window.CURRENT_USER = null;
+      document.getElementById('app-container').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('login-username').value = '';
+      document.getElementById('login-password').value = '';
+    };
+
+    window.openChangePasswordModal = function() {
+      if (!window.CURRENT_USER) return;
+      document.getElementById('modal-body').innerHTML = `
+        <h3>?? Ð?i M?t Kh?u Tài Kho?n: ${window.CURRENT_USER.full_name}</h3>
+        <form onsubmit="window.handleChangePassword(event)" style="margin-top:1rem;">
+          <div class="form-group">
+            <label>M?t Kh?u M?i</label>
+            <input type="password" id="m-new-password" class="form-control" placeholder="Nh?p m?t kh?u m?i..." required minlength="6" />
+          </div>
+          <div class="form-group">
+            <label>Xác Nh?n M?t Kh?u M?i</label>
+            <input type="password" id="m-confirm-password" class="form-control" placeholder="Nh?p l?i m?t kh?u m?i..." required minlength="6" />
+          </div>
+          <div style="text-align:right; margin-top:1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.closeModal()">H?y</button>
+            <button type="submit" class="btn btn-primary">Luu M?t Kh?u</button>
+          </div>
+        </form>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.handleChangePassword = async function(e) {
+      e.preventDefault();
+      const newPass = document.getElementById('m-new-password').value;
+      const confirmPass = document.getElementById('m-confirm-password').value;
+
+      if (newPass !== confirmPass) {
+        window.showToast("M?t kh?u xác nh?n không kh?p. Vui lòng ki?m tra l?i!", "danger");
+        return;
+      }
+
+      const res = await window.callBackend('apiChangePassword', window.CURRENT_USER.username, newPass);
+      if (res && res.success) {
+        window.closeModal();
+        window.showToast("Ðã d?i m?t kh?u thành công!", "success");
+      } else {
+        window.showToast((res && res.message) ? res.message : "L?i khi d?i m?t kh?u!", "danger");
+      }
+    };
+
+    window.applyRoleBasedNavigation = function() {
+      const isTeacher = window.CURRENT_USER && window.CURRENT_USER.role === 'GIAO_VIEN';
+      const navItems = document.querySelectorAll('#sidebar-menu .nav-item');
+
+      navItems.forEach(item => {
+        const tab = item.getAttribute('data-tab');
+        if (isTeacher) {
+          item.style.display = (tab === 'attendance' || tab === 'assessment') ? 'flex' : 'none';
+        } else {
+          item.style.display = 'flex';
+        }
+      });
+
+      window.switchTab(isTeacher ? 'attendance' : 'dashboard');
+    };
+
+    window.startRealtimeSyncLoop = function() {
+      if (window.REALTIME_TIMER) clearInterval(window.REALTIME_TIMER);
+      window.REALTIME_TIMER = setInterval(async () => {
+        if (!window.CURRENT_USER) return;
+        const res = await window.callBackend('apiSyncAllData');
+        if (res && res.success) {
+          let updated = false;
+          if (res.teachers && JSON.stringify(res.teachers) !== JSON.stringify(window._teachers)) {
+            window._teachers = res.teachers;
+            updated = true;
+          }
+          if (res.students && JSON.stringify(res.students) !== JSON.stringify(window._students)) {
+            window._students = res.students;
+            updated = true;
+          }
+          if (res.classes && JSON.stringify(res.classes) !== JSON.stringify(window._classes)) {
+            window._classes = res.classes;
+            updated = true;
+          }
+
+          if (updated) {
+            const activeTabElem = document.querySelector('#sidebar-menu .nav-item.active');
+            if (activeTabElem) {
+              const currentTab = activeTabElem.getAttribute('data-tab');
+              window.switchTab(currentTab);
+            }
+          }
+        }
+      }, 2000);
+    };
+
+    window.switchTab = function(tabName) {
+      document.querySelectorAll('#sidebar-menu .nav-item').forEach(i => i.classList.remove('active'));
+      const activeNav = document.querySelector(`#sidebar-menu .nav-item[data-tab="${tabName}"]`);
+      if (activeNav) activeNav.classList.add('active');
+
+      const titleMap = {
+        dashboard: "?? Dashboard T?ng Quan",
+        teachers: "????? Qu?n lý Giáo viên",
+        students: "?? Qu?n lý H?c sinh",
+        classes: "?? Qu?n lý L?p h?c",
+        attendance: "?? L?ch H?c & Ði?m Danh H?c Sinh",
+        assessment: "?? Ðánh Giá H?c Sinh Theo Tháng",
+        salaries: "?? B?ng Tính Luong Giáo viên",
+        tuition: "?? B?ng Tính H?c Phí H?c Sinh",
+        finance: "?? Thu Chi & Công N? L?p H?c"
+      };
+
+      const titleElem = document.getElementById('page-title');
+      if (titleElem) titleElem.innerText = titleMap[tabName] || "H? th?ng";
+
+      if (tabName === 'dashboard') window.renderDashboardUI();
+      else if (tabName === 'teachers') window.renderTeachersUI();
+      else if (tabName === 'students') window.renderStudentsUI();
+      else if (tabName === 'classes') window.renderClassesUI();
+      else if (tabName === 'attendance') window.renderAttendanceUI();
+      else if (tabName === 'assessment') window.renderAssessmentUI();
+      else if (tabName === 'salaries') window.renderSalariesUI();
+      else if (tabName === 'tuition') window.renderTuitionUI();
+      else if (tabName === 'finance') window.renderFinanceUI();
+    };
+
+    window.renderDashboardUI = function() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+      container.innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card"><span>T?ng H?c sinh</span><h3>${window._students.length}</h3></div>
+          <div class="stat-card"><span>T?ng Giáo viên</span><h3>${window._teachers.length}</h3></div>
+          <div class="stat-card"><span>L?p Ðang M?</span><h3>${window._classes.length}</h3></div>
+        </div>
+      `;
+    };
+
+    /* 1. QU?N LÝ GIÁO VIÊN */
+    window.renderTeachersUI = function() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      let rows = window._teachers.map((t, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td><strong>${t.ma_gv}</strong></td>
+          <td><strong>${t.ho_ten}</strong></td>
+          <td>${t.dien_thoai}</td>
+          <td><span class="badge badge-success">${t.chuyen_mon || 'Toán'}</span></td>
+          <td>${t.mon_giang_day || 'Môn h?c'}</td>
+          <td>${window.formatVND(t.muc_luong)}</td>
+          <td>
+            <button class="btn btn-warning btn-sm" onclick="window.openEditTeacherModal('${t.gv_id}')">?? S?a</button>
+            <button class="btn btn-danger btn-sm" onclick="window.deleteTeacher('${t.gv_id}', '${t.ho_ten}')">??? Xóa</button>
+          </td>
+        </tr>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h3>????? Qu?n Lý Giáo Viên</h3>
+            <button class="btn btn-primary" onclick="window.openAddTeacherModal()">? Thêm Giáo Viên M?i</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>STT</th><th>Mã GV</th><th>Tên Giáo Viên</th><th>Ði?n tho?i</th><th>Chuyên Môn</th><th>Môn Gi?ng D?y</th><th>M?c Luong</th><th>Thao Tác</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    };
+
+    /* 2. QU?N LÝ H?C SINH */
+    window.renderStudentsUI = function() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      const classOptions = `<option value="ALL">-- T?t c? các l?p --</option>` + window._classes.map(c => `<option value="${c.lop_id}" ${c.lop_id === window._selectedStudentClassFilter ? 'selected' : ''}>${c.ten_lop}</option>`).join('');
+
+      let filteredStudents = window._students;
+      if (window._selectedStudentClassFilter !== 'ALL') {
+        filteredStudents = filteredStudents.filter(s => s.lop_id === window._selectedStudentClassFilter);
+      }
+
+      let rows = filteredStudents.map((s, idx) => {
+        const clsName = window._classes.find(c => c.lop_id === s.lop_id)?.ten_lop || s.lop_id;
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${s.ma_hs}</strong></td>
+            <td>${s.ho_ten}</td>
+            <td><span class="badge badge-warning">${clsName}</span></td>
+            <td>${s.ten_phu_huynh}</td>
+            <td>${s.dien_thoai}</td>
+            <td>${window.formatVND(s.muc_hoc_phi)}</td>
+            <td>
+              <button class="btn btn-warning btn-sm" onclick="window.openEditStudentModal('${s.hs_id}')">?? S?a</button>
+              <button class="btn btn-danger btn-sm" onclick="window.deleteStudent('${s.hs_id}', '${s.ho_ten}')">??? Xóa</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h3>?? Qu?n Lý H?c Sinh</h3>
+            <button class="btn btn-primary" onclick="window.openAddStudentModal()">? Thêm H?c Sinh M?i</button>
+          </div>
+          <div class="filter-bar">
+            <label>Ch?n L?p H?c C?n Xem H?c Sinh:</label>
+            <select class="form-control" style="width:240px;" onchange="window._selectedStudentClassFilter=this.value; window.renderStudentsUI();">${classOptions}</select>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>STT</th><th>Mã HS</th><th>H? Tên H?c Sinh</th><th>L?p</th><th>H? Tên Ph? Huynh</th><th>SÐT Ph? Huynh</th><th>H?c Phí G?c</th><th>Thao Tác</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    };
+
+    /* 3. QU?N LÝ L?P H?C */
+    window.renderClassesUI = function() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      let rows = window._classes.map((c, idx) => {
+        const gv = window._teachers.find(t => t.gv_id === c.gvcn_id);
+        const gvName = gv ? gv.ho_ten : 'Chua phân công';
+        const gvPhone = gv ? gv.dien_thoai : 'N/A';
+
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${c.ma_lop}</strong></td>
+            <td>${c.ten_lop}</td>
+            <td><span class="badge badge-success">${c.phong_id}</span></td>
+            <td><strong>${gvName}</strong></td>
+            <td>${gvPhone}</td>
+            <td>${c.si_so} h?c sinh</td>
+          </tr>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h3>?? Qu?n Lý L?p H?c</h3>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>STT</th><th>Mã L?p</th><th>Tên L?p H?c</th><th>S? Phòng</th><th>Tên Giáo Viên CN</th><th>SÐT Giáo Viên</th><th>Si S?</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    };
+
+    /* 4. L?CH H?C VÀ ÐI?M DANH */
+    window.renderAttendanceUI = function() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      const classOptions = window._classes.map(c => `<option value="${c.lop_id}" ${c.lop_id === window._selectedAttClass ? 'selected' : ''}>${c.ten_lop}</option>`).join('');
+      let classStudents = window._students.filter(s => s.lop_id === window._selectedAttClass);
+
+      let rows = classStudents.map((s, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${s.ma_hs}</td>
+          <td><strong>${s.ho_ten}</strong></td>
+          <td>
+            <select class="form-control att-select" data-hsid="${s.hs_id}">
+              <option value="CO_MAT">? Có m?t</option>
+              <option value="VANG">? V?ng m?t</option>
+              <option value="CO_PHEP">?? Ngh? có phép</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h3>?? L?ch H?c & Ði?m Danh H?c Sinh</h3>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="window.exportAttendanceReport('DAY')">?? Xu?t File Theo Ngày (CSV)</button>
+              <button class="btn btn-warning" onclick="window.exportAttendanceReport('MONTH')">?? Xu?t Báo Cáo Tháng (CSV)</button>
+            </div>
+          </div>
+          <div class="filter-bar">
+            <label>L?p H?c:</label>
+            <select class="form-control" style="width:160px;" onchange="window._selectedAttClass=this.value; window.renderAttendanceUI();">${classOptions}</select>
+            <label style="margin-left:0.5rem;">Xem L?ch S? Ngày:</label>
+            <input type="text" class="form-control" value="${window._selectedAttDate}" style="width:120px;" placeholder="DD/MM/YYYY" />
+            <label style="margin-left:0.5rem;">B? L?c Tr?ng Thái:</label>
+            <select class="form-control" style="width:150px;" onchange="window._selectedAttFilter=this.value; window.renderAttendanceUI();">
+              <option value="ALL">-- T?t c? h?c sinh --</option>
+              <option value="CO_MAT">? Ðã có m?t</option>
+              <option value="VANG">? V?ng m?t</option>
+              <option value="CO_PHEP">?? Ngh? có phép</option>
+            </select>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>STT</th><th>Mã HS</th><th>H? Tên H?c Sinh</th><th>Ði?m Danh Tr?ng Thái</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <div style="margin-top:1rem; text-align:right;">
+            <button class="btn btn-primary" onclick="window.saveAttendanceData()">?? Luu Ði?m Danh Google Sheets</button>
+          </div>
+        </div>
+      `;
+    };
+
+    window.saveAttendanceData = async function() {
+      const selects = document.querySelectorAll('.att-select');
+      const attendanceList = [];
+      selects.forEach(sel => {
+        attendanceList.push({ hs_id: sel.getAttribute('data-hsid'), trang_thai: sel.value });
+      });
+      await window.callBackend('apiSaveAttendance', window._selectedAttClass, window._selectedAttDate, attendanceList);
+      window.showToast("Ðã luu d? li?u di?m danh v? Google Sheets!", "success");
+    };
+
+    window.exportAttendanceReport = function(type) {
+      let csv = "STT,Ma_HS,Ho_Ten,Lop,Ngay,Trang_Thai\n";
+      const classStudents = window._students.filter(s => s.lop_id === window._selectedAttClass);
+      classStudents.forEach((s, idx) => {
+        csv += `${idx + 1},${s.ma_hs},${s.ho_ten},${s.lop_id},${window._selectedAttDate},CO_MAT\n`;
+      });
+      window.downloadCSV(`Bao_Cao_Diem_Danh_${type}.csv`, csv);
+    };
+
+    /* 5. ÐÁNH GIÁ H?C SINH */
+    window.renderAssessmentUI = function() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+      const classOptions = window._classes.map(c => `<option value="${c.lop_id}" ${c.lop_id === window._selectedAssClass ? 'selected' : ''}>${c.ten_lop}</option>`).join('');
+      const classStudents = window._students.filter(s => s.lop_id === window._selectedAssClass);
+
+      let rows = classStudents.map((s, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${s.ma_hs}</td>
+          <td><strong>${s.ho_ten}</strong></td>
+          <td>
+            <select class="form-control ass-hl-select" data-hsid="${s.hs_id}">
+              <option value="XUAT_SAC">?? Xu?t S?c</option>
+              <option value="GIOI" selected>? Gi?i</option>
+              <option value="KHA">?? Khá</option>
+              <option value="TRUNG_BINH">?? Trung Bình</option>
+              <option value="YEU">?? Y?u</option>
+            </select>
+          </td>
+          <td><input type="text" class="form-control ass-nx-input" data-hsid="${s.hs_id}" value="Cham ngoan, ti?p thu bài t?t" /></td>
+        </tr>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h3>?? Ðánh Giá H?c Sinh Theo Tháng</h3>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="window.previewAssessmentReport()">??? Xem Báo Cáo</button>
+              <button class="btn btn-warning" onclick="window.print()">??? In Báo Cáo A4</button>
+              <button class="btn btn-success" onclick="window.exportAssessmentCSV()">?? Xu?t File Báo Cáo (CSV)</button>
+            </div>
+          </div>
+          <div class="filter-bar">
+            <label>Ch?n L?p H?c:</label>
+            <select class="form-control" style="width:180px;" onchange="window._selectedAssClass=this.value; window.renderAssessmentUI();">${classOptions}</select>
+          </div>
+          <div class="table-responsive">
+            <table><thead><tr><th>STT</th><th>Mã HS</th><th>H? Tên H?c Sinh</th><th>X?p Lo?i H?c L?c</th><th>Nh?n Xét Chi Ti?t</th></tr></thead><tbody>${rows}</tbody></table>
+          </div>
+          <div style="margin-top:1rem; text-align:right;">
+            <button class="btn btn-primary" onclick="window.saveAssessmentData()">?? Luu Ðánh Giá Vào Sheet</button>
+          </div>
+        </div>
+      `;
+    };
+
+    window.previewAssessmentReport = function() {
+      const classStudents = window._students.filter(s => s.lop_id === window._selectedAssClass);
+      let rows = classStudents.map((s, i) => `<tr><td>${i+1}</td><td>${s.ho_ten}</td><td>Gi?i</td><td>Cham ngoan, tích c?c h?c t?p</td></tr>`).join('');
+      document.getElementById('modal-body').innerHTML = `
+        <h2>?? BÁO CÁO ÐÁNH GIÁ H?C SINH</h2>
+        <p>L?p: <strong>${window._selectedAssClass}</strong></p>
+        <table style="margin-top:1rem;"><thead><tr><th>STT</th><th>H? Tên</th><th>H?c L?c</th><th>Nh?n Xét Chi Ti?t</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="no-print" style="margin-top:1.5rem; text-align:right;">
+          <button class="btn btn-secondary" onclick="window.closeModal()">Ðóng</button>
+          <button class="btn btn-warning" onclick="window.print()">??? In A4</button>
+        </div>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.exportAssessmentCSV = function() {
+      let csv = "STT,Ma_HS,Ho_Ten,Hoc_Luc,Nhan_Xet\n";
+      const classStudents = window._students.filter(s => s.lop_id === window._selectedAssClass);
+      classStudents.forEach((s, idx) => {
+        csv += `${idx + 1},${s.ma_hs},${s.ho_ten},GIOI,Cham ngoan ban tot\n`;
+      });
+      window.downloadCSV("Bao_Cao_Danh_Gia.csv", csv);
+    };
+
+    window.saveAssessmentData = async function() {
+      const hlSelects = document.querySelectorAll('.ass-hl-select');
+      const list = [];
+      hlSelects.forEach(sel => {
+        const hsId = sel.getAttribute('data-hsid');
+        const nxInput = document.querySelector(`.ass-nx-input[data-hsid="${hsId}"]`);
+        list.push({ hs_id: hsId, hoc_luc: sel.value, nhan_xet: nxInput ? nxInput.value : '' });
+      });
+      await window.callBackend('apiSaveAssessments', window._selectedAssClass, '11/2026', list);
+      window.showToast("Ðã luu dánh giá h?c sinh vào Google Sheets!", "success");
+    };
+
+    /* 6. TÍNH LUONG GIÁO VIÊN */
+    window.renderSalariesUI = function() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      let rows = window._teachers.map((t, idx) => {
+        const luongCung = t.muc_luong || 0;
+        const côngChuan = t.ngay_cong_chuan || 22;
+        const nghiKhongPhep = t.nghi_khong_phep || 0;
+        const phuCap = t.phu_cap || 0;
+        const thuong = t.thuong || 0;
+        const donGiaNgay = luongCung / côngChuan;
+        const thucNhan = Math.round((luongCung - (donGiaNgay * nghiKhongPhep) + phuCap + thuong) / 1000) * 1000;
+
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${t.ho_ten}</strong></td>
+            <td>${window.formatVND(luongCung)}</td>
+            <td>${côngChuan} ngày</td>
+            <td><span class="badge badge-danger">${nghiKhongPhep} ngày</span></td>
+            <td>${window.formatVND(phuCap)}</td>
+            <td>${window.formatVND(thuong)}</td>
+            <td><strong style="color:var(--success); font-size:1rem;">${window.formatVND(thucNhan)}</strong></td>
+            <td>
+              <button class="btn btn-warning btn-sm" onclick="window.editTeacherSalary('${t.gv_id}')">?? Ði?u Ch?nh</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h3>?? B?ng Tính Luong Giáo Viên</h3>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="window.previewSalaryReport()">??? Xem Tru?c Báo Cáo</button>
+              <button class="btn btn-success" onclick="window.exportSalaryCSV()">?? Xu?t File Luong (CSV)</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>STT</th><th>Giáo Viên</th><th>Luong C?ng</th><th>Công Chu?n</th><th>Ngh? Không Phép</th><th>Ph? C?p</th><th>Thu?ng</th><th>Th?c Nh?n</th><th>Thao Tác</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    };
+
+    window.editTeacherSalary = function(gvId) {
+      const t = window._teachers.find(item => item.gv_id === gvId);
+      if (!t) return;
+      document.getElementById('modal-body').innerHTML = `
+        <h3>?? Ði?u Ch?nh Luong Giáo Viên: ${t.ho_ten}</h3>
+        <form onsubmit="window.saveSalaryAdjustment(event, '${gvId}')" style="margin-top:1rem;">
+          <div class="form-group"><label>Luong C?ng (VND)</label><input type="number" id="m-sal-base" class="form-control" value="${t.muc_luong}" required /></div>
+          <div class="form-group"><label>Công Chu?n (Ngày)</label><input type="number" id="m-sal-days" class="form-control" value="${t.ngay_cong_chuan || 22}" required /></div>
+          <div class="form-group"><label>Ngh? Không Phép (Ngày)</label><input type="number" id="m-sal-off" class="form-control" value="${t.nghi_khong_phep || 0}" required /></div>
+          <div class="form-group"><label>Ph? C?p (VND)</label><input type="number" id="m-sal-allow" class="form-control" value="${t.phu_cap || 0}" required /></div>
+          <div class="form-group"><label>Thu?ng (VND)</label><input type="number" id="m-sal-bonus" class="form-control" value="${t.thuong || 0}" required /></div>
+          <div style="text-align:right; margin-top:1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.closeModal()">H?y</button>
+            <button type="submit" class="btn btn-primary">Luu Ði?u Ch?nh</button>
+          </div>
+        </form>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.saveSalaryAdjustment = async function(e, gvId) {
+      e.preventDefault();
+      const t = window._teachers.find(item => item.gv_id === gvId);
+      if (t) {
+        t.muc_luong = Number(document.getElementById('m-sal-base').value) || 0;
+        t.ngay_cong_chuan = Number(document.getElementById('m-sal-days').value) || 22;
+        t.nghi_khong_phep = Number(document.getElementById('m-sal-off').value) || 0;
+        t.phu_cap = Number(document.getElementById('m-sal-allow').value) || 0;
+        t.thuong = Number(document.getElementById('m-sal-bonus').value) || 0;
+        await window.callBackend('apiSaveTeacher', t, false);
+      }
+      window.closeModal();
+      window.renderSalariesUI();
+      window.showToast("Ðã luu di?u ch?nh luong giáo viên!", "success");
+    };
+
+    window.previewSalaryReport = function() {
+      let rows = window._teachers.map((t, i) => `<tr><td>${i+1}</td><td>${t.ho_ten}</td><td>${window.formatVND(t.muc_luong)}</td><td>${window.formatVND(t.muc_luong + (t.phu_cap||0))}</td></tr>`).join('');
+      document.getElementById('modal-body').innerHTML = `
+        <h2>?? BÁO CÁO T?NG H?P B?NG LUONG GIÁO VIÊN</h2>
+        <table style="margin-top:1rem;"><thead><tr><th>STT</th><th>Giáo Viên</th><th>Luong C?ng</th><th>Th?c Nh?n</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="no-print" style="margin-top:1.5rem; text-align:right;">
+          <button class="btn btn-secondary" onclick="window.closeModal()">Ðóng</button>
+          <button class="btn btn-warning" onclick="window.print()">??? In Báo Cáo A4</button>
+        </div>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.exportSalaryCSV = function() {
+      let csv = "STT,Giao_Vien,Luong_Cung,Cong_Chuan,Nghi_Khong_Phep,Phu_Cap,Thuong,Thuc_Nhan\n";
+      window._teachers.forEach((t, idx) => {
+        csv += `${idx + 1},${t.ho_ten},${t.muc_luong},22,0,${t.phu_cap||0},${t.thuong||0},${t.muc_luong}\n`;
+      });
+      window.downloadCSV("Bang_Luong_Giao_Vien.csv", csv);
+    };
+
+    /* 7. TÍNH PHÍ H?C SINH */
+    window.renderTuitionUI = function() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      let rows = window._students.map((s, idx) => {
+        const clsName = window._classes.find(c => c.lop_id === s.lop_id)?.ten_lop || s.lop_id;
+        const hocPhiGoc = s.muc_hoc_phi || 2500000;
+        const buoiThucTe = s.buoi_thuc_te || 20;
+        const phaiThu = hocPhiGoc;
+
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${s.ho_ten}</strong></td>
+            <td><span class="badge badge-warning">${clsName}</span></td>
+            <td>${window.formatVND(hocPhiGoc)}</td>
+            <td>${buoiThucTe} bu?i</td>
+            <td><strong style="color:var(--primary); font-size:1rem;">${window.formatVND(phaiThu)}</strong></td>
+            <td>
+              <button class="btn btn-warning btn-sm" onclick="window.editTuitionBill('${s.hs_id}')">?? Ði?u Ch?nh Phi?u Thu</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h3>?? B?ng Tính H?c Phí H?c Sinh</h3>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="window.previewTuitionReport()">??? Xem Tru?c Báo Cáo</button>
+              <button class="btn btn-success" onclick="window.exportTuitionCSV()">?? Xu?t File H?c Phí (CSV)</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>STT</th><th>H?c Sinh</th><th>L?p</th><th>H?c Phí G?c</th><th>Bu?i Th?c T?</th><th>Ph?i Thu</th><th>Thao Tác</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    };
+
+    window.editTuitionBill = function(hsId) {
+      const s = window._students.find(item => item.hs_id === hsId);
+      if (!s) return;
+      document.getElementById('modal-body').innerHTML = `
+        <h3>?? Ði?u Ch?nh Phi?u Thu H?c Phí: ${s.ho_ten}</h3>
+        <form onsubmit="window.saveTuitionAdjustment(event, '${hsId}')" style="margin-top:1rem;">
+          <div class="form-group"><label>H?c Phí G?c (VND)</label><input type="number" id="m-fee-base" class="form-control" value="${s.muc_hoc_phi}" required /></div>
+          <div class="form-group"><label>S? Bu?i H?c Th?c T?</label><input type="number" id="m-fee-sessions" class="form-control" value="${s.buoi_thuc_te || 20}" required /></div>
+          <div style="text-align:right; margin-top:1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.closeModal()">H?y</button>
+            <button type="submit" class="btn btn-primary">Luu Ði?u Ch?nh</button>
+          </div>
+        </form>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.saveTuitionAdjustment = async function(e, hsId) {
+      e.preventDefault();
+      const s = window._students.find(item => item.hs_id === hsId);
+      if (s) {
+        s.muc_hoc_phi = Number(document.getElementById('m-fee-base').value) || 0;
+        s.buoi_thuc_te = Number(document.getElementById('m-fee-sessions').value) || 20;
+        await window.callBackend('apiSaveStudent', s, false);
+      }
+      window.closeModal();
+      window.renderTuitionUI();
+      window.showToast("Ðã luu di?u ch?nh phi?u thu h?c phí!", "success");
+    };
+
+    window.previewTuitionReport = function() {
+      let rows = window._students.map((s, i) => `<tr><td>${i+1}</td><td>${s.ho_ten}</td><td>${s.lop_id}</td><td>${window.formatVND(s.muc_hoc_phi)}</td></tr>`).join('');
+      document.getElementById('modal-body').innerHTML = `
+        <h2>?? BÁO CÁO T?NG H?P H?C PHÍ CÁC L?P</h2>
+        <table style="margin-top:1rem;"><thead><tr><th>STT</th><th>H?c Sinh</th><th>L?p</th><th>Ph?i Thu</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="no-print" style="margin-top:1.5rem; text-align:right;">
+          <button class="btn btn-secondary" onclick="window.closeModal()">Ðóng</button>
+          <button class="btn btn-warning" onclick="window.print()">??? In Báo Cáo A4</button>
+        </div>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.exportTuitionCSV = function() {
+      let csv = "STT,Hoc_Sinh,Lop,Hoc_Phi_Goc,Buoi_Thuc_Te,Phai_Thu\n";
+      window._students.forEach((s, idx) => {
+        csv += `${idx + 1},${s.ho_ten},${s.lop_id},${s.muc_hoc_phi},20,${s.muc_hoc_phi}\n`;
+      });
+      window.downloadCSV("Bang_Tinh_Hoc_Phi.csv", csv);
+    };
+
+    /* 8. THU CHI CÔNG N? */
+    window.renderFinanceUI = function() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      const classOptions = `<option value="ALL">-- T?t c? các l?p --</option>` + window._classes.map(c => `<option value="${c.lop_id}" ${c.lop_id === window._selectedFinanceClass ? 'selected' : ''}>${c.ten_lop}</option>`).join('');
+
+      let filteredStudents = window._students;
+      if (window._selectedFinanceClass !== 'ALL') {
+        filteredStudents = filteredStudents.filter(s => s.lop_id === window._selectedFinanceClass);
+      }
+
+      if (window._selectedFinanceStatus !== 'ALL') {
+        filteredStudents = filteredStudents.filter(s => {
+          const conNo = s.muc_hoc_phi - (s.da_thu || 0);
+          if (window._selectedFinanceStatus === 'DA_THU') return conNo <= 0;
+          if (window._selectedFinanceStatus === 'CON_NO') return conNo > 0;
+          return true;
+        });
+      }
+
+      let rows = filteredStudents.map((s, idx) => {
+        const phaiThu = s.muc_hoc_phi;
+        const daThu = s.da_thu || 0;
+        const conNo = phaiThu - daThu;
+        let badge = '<span class="badge badge-success">? Ðã thu</span>';
+        if (conNo > 0) badge = '<span class="badge badge-warning">?? Còn n? l?i</span>';
+
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${s.ho_ten}</strong></td>
+            <td>${window.formatVND(phaiThu)}</td>
+            <td>${window.formatVND(daThu)}</td>
+            <td><strong style="color:var(--danger);">${window.formatVND(conNo)}</strong></td>
+            <td>${badge}</td>
+            <td>
+              <button class="btn btn-primary btn-sm" onclick="window.openCollectPaymentModal('${s.hs_id}')">?? C?p Nh?t Thu</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h3>?? Thu Chi & Công N? L?p H?c</h3>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="window.previewFinanceReport()">??? Xem Báo Cáo</button>
+              <button class="btn btn-warning" onclick="window.print()">??? In Báo Cáo</button>
+              <button class="btn btn-success" onclick="window.exportFinanceCSV()">?? Xu?t File Báo Cáo (CSV)</button>
+            </div>
+          </div>
+          <div class="filter-bar">
+            <label>Ch?n L?p H?c:</label>
+            <select class="form-control" style="width:200px;" onchange="window._selectedFinanceClass=this.value; window.renderFinanceUI();">${classOptions}</select>
+            <label style="margin-left:1rem;">Tr?ng Thái Thu:</label>
+            <select class="form-control" style="width:180px;" onchange="window._selectedFinanceStatus=this.value; window.renderFinanceUI();">
+              <option value="ALL">-- T?t c? tr?ng thái --</option>
+              <option value="DA_THU">? Ðã thu d?</option>
+              <option value="CON_NO">?? Còn n? l?i</option>
+            </select>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>STT</th><th>H?c Sinh</th><th>H?c Phí Ph?i Thu</th><th>Ðã Thu</th><th>Còn N?</th><th>Tr?ng Thái</th><th>Thao Tác</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    };
+
+    window.previewFinanceReport = function() {
+      let rows = window._students.map((s, i) => `<tr><td>${i+1}</td><td>${s.ho_ten}</td><td>${window.formatVND(s.muc_hoc_phi)}</td><td>${window.formatVND(s.da_thu||0)}</td><td>${window.formatVND(s.muc_hoc_phi - (s.da_thu||0))}</td></tr>`).join('');
+      document.getElementById('modal-body').innerHTML = `
+        <h2>?? BÁO CÁO THU CHI & TÌNH HÌNH CÔNG N? L?P H?C</h2>
+        <table style="margin-top:1rem;"><thead><tr><th>STT</th><th>H?c Sinh</th><th>Ph?i Thu</th><th>Ðã Thu</th><th>Còn N?</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="no-print" style="margin-top:1.5rem; text-align:right;">
+          <button class="btn btn-secondary" onclick="window.closeModal()">Ðóng</button>
+          <button class="btn btn-warning" onclick="window.print()">??? In Báo Cáo A4</button>
+        </div>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.exportFinanceCSV = function() {
+      let csv = "STT,Hoc_Sinh,Hoc_Phi_Phai_Thu,Da_Thu,Con_No,Trang_Thai\n";
+      window._students.forEach((s, idx) => {
+        const conNo = s.muc_hoc_phi - (s.da_thu || 0);
+        csv += `${idx + 1},${s.ho_ten},${s.muc_hoc_phi},${s.da_thu||0},${conNo},${conNo<=0?'Da_Thu':'Con_No'}\n`;
+      });
+      window.downloadCSV("Bao_Cao_Cong_No_Thu_Chi.csv", csv);
+    };
+
+    /* MODAL HANDLERS FOR TEACHERS & STUDENTS CRUD */
+    window.openAddTeacherModal = function() {
+      document.getElementById('modal-body').innerHTML = `
+        <h3>? Thêm Giáo Viên M?i</h3>
+        <form onsubmit="window.handleAddTeacher(event)" style="margin-top:1rem;">
+          <div class="form-group"><label>Mã Giáo Viên</label><input type="text" id="m-gv-ma" class="form-control" value="GV00${window._teachers.length + 1}" required /></div>
+          <div class="form-group"><label>H? Tên Giáo Viên</label><input type="text" id="m-gv-ten" class="form-control" placeholder="Nguy?n Van A" required /></div>
+          <div class="form-group"><label>S? Ði?n Tho?i</label><input type="text" id="m-gv-phone" class="form-control" placeholder="0905xxxxxx" required /></div>
+          <div class="form-group"><label>Chuyên Môn</label><input type="text" id="m-gv-cm" class="form-control" placeholder="Toán, Lý, Van..." required /></div>
+          <div class="form-group"><label>Môn Gi?ng D?y</label><input type="text" id="m-gv-mon" class="form-control" placeholder="Toán Hóa..." required /></div>
+          <div class="form-group"><label>Luong C?ng (VND)</label><input type="number" id="m-gv-luong" class="form-control" value="15000000" required /></div>
+          <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border-color);" />
+          <div class="form-group" style="display:flex; align-items:center; gap:0.5rem;">
+            <input type="checkbox" id="m-gv-create-class" onchange="document.getElementById('new-class-inputs').style.display = this.checked ? 'block' : 'none';" />
+            <label for="m-gv-create-class" style="margin:0; cursor:pointer; color:var(--primary); font-weight:bold;">?? Ð?ng th?i T?o L?p H?c M?i do GV này làm GVCN</label>
+          </div>
+          <div id="new-class-inputs" style="display:none; background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid var(--border-color);">
+            <div class="form-group"><label>Mã L?p</label><input type="text" id="m-lop-ma" class="form-control" value="10A${window._classes.length + 1}" /></div>
+            <div class="form-group"><label>Tên L?p H?c</label><input type="text" id="m-lop-ten" class="form-control" value="L?p 10A${window._classes.length + 1}" /></div>
+            <div class="form-group"><label>S? Phòng</label><input type="text" id="m-lop-phong" class="form-control" value="P10${window._classes.length + 1}" /></div>
+          </div>
+          <div style="text-align:right; margin-top:1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.closeModal()">H?y</button>
+            <button type="submit" class="btn btn-primary">Luu Giáo Viên</button>
+          </div>
+        </form>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.handleAddTeacher = async function(e) {
+      e.preventDefault();
+      const newGvId = 'GV' + String(window._teachers.length + 1).padStart(3, '0');
+      const teacherObj = {
+        gv_id: newGvId,
+        ma_gv: document.getElementById('m-gv-ma').value.trim(),
+        ho_ten: document.getElementById('m-gv-ten').value.trim(),
+        dien_thoai: document.getElementById('m-gv-phone').value.trim(),
+        chuyen_mon: document.getElementById('m-gv-cm').value.trim(),
+        mon_giang_day: document.getElementById('m-gv-mon').value.trim(),
+        muc_luong: Number(document.getElementById('m-gv-luong').value) || 0,
+        ngay_cong_chuan: 22,
+        nghi_khong_phep: 0,
+        phu_cap: 1000000,
+        thuong: 500000
+      };
+
+      window._teachers.push(teacherObj);
+      await window.callBackend('apiSaveTeacher', teacherObj, false);
+
+      const createClass = document.getElementById('m-gv-create-class').checked;
+      if (createClass) {
+        const classObj = {
+          lop_id: 'LOP_' + document.getElementById('m-lop-ma').value.trim(),
+          ma_lop: document.getElementById('m-lop-ma').value.trim(),
+          ten_lop: document.getElementById('m-lop-ten').value.trim(),
+          gvcn_id: newGvId,
+          phong_id: document.getElementById('m-lop-phong').value.trim(),
+          si_so: 0
+        };
+        window._classes.push(classObj);
+        await window.callBackend('apiSaveClass', classObj);
+      }
+
+      window.closeModal();
+      window.renderTeachersUI();
+      window.showToast("Ðã thêm giáo viên thành công!", "success");
+    };
+
+    window.openEditTeacherModal = function(gvId) {
+      const t = window._teachers.find(item => item.gv_id === gvId);
+      if (!t) return;
+      document.getElementById('modal-body').innerHTML = `
+        <h3>?? Ch?nh S?a Giáo Viên: ${t.ho_ten}</h3>
+        <form onsubmit="window.handleEditTeacher(event, '${gvId}')" style="margin-top:1rem;">
+          <div class="form-group"><label>H? Tên Giáo Viên</label><input type="text" id="m-edit-gv-ten" class="form-control" value="${t.ho_ten}" required /></div>
+          <div class="form-group"><label>S? Ði?n Tho?i</label><input type="text" id="m-edit-gv-phone" class="form-control" value="${t.dien_thoai}" required /></div>
+          <div class="form-group"><label>Chuyên Môn</label><input type="text" id="m-edit-gv-cm" class="form-control" value="${t.chuyen_mon || ''}" required /></div>
+          <div class="form-group"><label>Môn Gi?ng D?y</label><input type="text" id="m-edit-gv-mon" class="form-control" value="${t.mon_giang_day || ''}" required /></div>
+          <div class="form-group"><label>Luong C?ng (VND)</label><input type="number" id="m-edit-gv-luong" class="form-control" value="${t.muc_luong}" required /></div>
+          <div style="text-align:right; margin-top:1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.closeModal()">H?y</button>
+            <button type="submit" class="btn btn-primary">Luu Thay Ð?i</button>
+          </div>
+        </form>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.handleEditTeacher = async function(e, gvId) {
+      e.preventDefault();
+      const t = window._teachers.find(item => item.gv_id === gvId);
+      if (t) {
+        t.ho_ten = document.getElementById('m-edit-gv-ten').value.trim();
+        t.dien_thoai = document.getElementById('m-edit-gv-phone').value.trim();
+        t.chuyen_mon = document.getElementById('m-edit-gv-cm').value.trim();
+        t.mon_giang_day = document.getElementById('m-edit-gv-mon').value.trim();
+        t.muc_luong = Number(document.getElementById('m-edit-gv-luong').value) || 0;
+        await window.callBackend('apiSaveTeacher', t, false);
+      }
+      window.closeModal();
+      window.renderTeachersUI();
+      window.showToast("Ðã c?p nh?t thông tin giáo viên!", "success");
+    };
+
+    window.deleteTeacher = async function(gvId, hoTen) {
+      if (!confirm(`B?n có ch?c ch?n mu?n xóa giáo viên "${hoTen}"?`)) return;
+      window._teachers = window._teachers.filter(t => t.gv_id !== gvId);
+      await window.callBackend('apiSaveTeacher', { gv_id: gvId }, true);
+      window.renderTeachersUI();
+      window.showToast(`Ðã xóa giáo viên ${hoTen}!`, "success");
+    };
+
+    window.openAddStudentModal = function() {
+      const classOptions = window._classes.map(c => `<option value="${c.lop_id}">${c.ten_lop}</option>`).join('');
+      document.getElementById('modal-body').innerHTML = `
+        <h3>? Thêm H?c Sinh M?i</h3>
+        <form onsubmit="window.handleAddStudent(event)" style="margin-top:1rem;">
+          <div class="form-group"><label>Mã H?c Sinh</label><input type="text" id="m-hs-ma" class="form-control" value="HS00${window._students.length + 1}" required /></div>
+          <div class="form-group"><label>H? Tên H?c Sinh</label><input type="text" id="m-hs-ten" class="form-control" placeholder="Nguy?n Van B" required /></div>
+          <div class="form-group"><label>Ch?n L?p H?c</label><select id="m-hs-lop" class="form-control">${classOptions}</select></div>
+          <div class="form-group"><label>Tên Ph? Huynh</label><input type="text" id="m-hs-ph" class="form-control" placeholder="Nguy?n Van C" required /></div>
+          <div class="form-group"><label>S? Ði?n Tho?i Ph? Huynh</label><input type="text" id="m-hs-phone" class="form-control" placeholder="0914xxxxxx" required /></div>
+          <div class="form-group"><label>M?c H?c Phí (VND)</label><input type="number" id="m-hs-fee" class="form-control" value="2500000" required /></div>
+          <div style="text-align:right; margin-top:1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.closeModal()">H?y</button>
+            <button type="submit" class="btn btn-primary">Luu H?c Sinh</button>
+          </div>
+        </form>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.handleAddStudent = async function(e) {
+      e.preventDefault();
+      const newHsId = 'HS' + String(window._students.length + 1).padStart(3, '0');
+      const studentObj = {
+        hs_id: newHsId,
+        ma_hs: document.getElementById('m-hs-ma').value.trim(),
+        ho_ten: document.getElementById('m-hs-ten').value.trim(),
+        lop_id: document.getElementById('m-hs-lop').value,
+        ten_phu_huynh: document.getElementById('m-hs-ph').value.trim(),
+        dien_thoai: document.getElementById('m-hs-phone').value.trim(),
+        muc_hoc_phi: Number(document.getElementById('m-hs-fee').value) || 0,
+        buoi_thuc_te: 20,
+        da_thu: 0,
+        trang_thai_thu: 'CON_NO'
+      };
+
+      window._students.push(studentObj);
+      await window.callBackend('apiSaveStudent', studentObj, false);
+
+      window.closeModal();
+      window.renderStudentsUI();
+      window.showToast("Ðã thêm h?c sinh m?i thành công!", "success");
+    };
+
+    window.openEditStudentModal = function(hsId) {
+      const s = window._students.find(item => item.hs_id === hsId);
+      if (!s) return;
+      const classOptions = window._classes.map(c => `<option value="${c.lop_id}" ${c.lop_id === s.lop_id ? 'selected' : ''}>${c.ten_lop}</option>`).join('');
+      document.getElementById('modal-body').innerHTML = `
+        <h3>?? Ch?nh S?a H?c Sinh: ${s.ho_ten}</h3>
+        <form onsubmit="window.handleEditStudent(event, '${hsId}')" style="margin-top:1rem;">
+          <div class="form-group"><label>H? Tên H?c Sinh</label><input type="text" id="m-edit-hs-ten" class="form-control" value="${s.ho_ten}" required /></div>
+          <div class="form-group"><label>L?p H?c</label><select id="m-edit-hs-lop" class="form-control">${classOptions}</select></div>
+          <div class="form-group"><label>Tên Ph? Huynh</label><input type="text" id="m-edit-hs-ph" class="form-control" value="${s.ten_phu_huynh}" required /></div>
+          <div class="form-group"><label>SÐT Ph? Huynh</label><input type="text" id="m-edit-hs-phone" class="form-control" value="${s.dien_thoai}" required /></div>
+          <div class="form-group"><label>H?c Phí G?c (VND)</label><input type="number" id="m-edit-hs-fee" class="form-control" value="${s.muc_hoc_phi}" required /></div>
+          <div style="text-align:right; margin-top:1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.closeModal()">H?y</button>
+            <button type="submit" class="btn btn-primary">Luu Thay Ð?i</button>
+          </div>
+        </form>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.handleEditStudent = async function(e, hsId) {
+      e.preventDefault();
+      const s = window._students.find(item => item.hs_id === hsId);
+      if (s) {
+        s.ho_ten = document.getElementById('m-edit-hs-ten').value.trim();
+        s.lop_id = document.getElementById('m-edit-hs-lop').value;
+        s.ten_phu_huynh = document.getElementById('m-edit-hs-ph').value.trim();
+        s.dien_thoai = document.getElementById('m-edit-hs-phone').value.trim();
+        s.muc_hoc_phi = Number(document.getElementById('m-edit-hs-fee').value) || 0;
+        await window.callBackend('apiSaveStudent', s, false);
+      }
+      window.closeModal();
+      window.renderStudentsUI();
+      window.showToast("Ðã c?p nh?t thông tin h?c sinh!", "success");
+    };
+
+    window.deleteStudent = async function(hsId, hoTen) {
+      if (!confirm(`B?n có ch?c ch?n mu?n xóa h?c sinh "${hoTen}"?`)) return;
+      window._students = window._students.filter(s => s.hs_id !== hsId);
+      await window.callBackend('apiSaveStudent', { hs_id: hsId }, true);
+      window.renderStudentsUI();
+      window.showToast(`Ðã xóa h?c sinh ${hoTen}!`, "success");
+    };
+
+    window.openCollectPaymentModal = function(hsId) {
+      const s = window._students.find(item => item.hs_id === hsId);
+      if (!s) return;
+      const phaiThu = s.muc_hoc_phi;
+      const daThu = s.da_thu || 0;
+      const conNo = phaiThu - daThu;
+
+      document.getElementById('modal-body').innerHTML = `
+        <h3>?? C?p Nh?t Thu Ti?n H?c Phí: ${s.ho_ten}</h3>
+        <p style="margin-top:0.5rem; color:var(--text-muted);">Ph?i thu: <strong>${window.formatVND(phaiThu)}</strong> | Ðã thu: <strong>${window.formatVND(daThu)}</strong> | Còn n?: <strong style="color:var(--danger);">${window.formatVND(conNo)}</strong></p>
+        <form onsubmit="window.handleCollectPayment(event, '${hsId}')" style="margin-top:1rem;">
+          <div class="form-group">
+            <label>S? Ti?n Thu Thêm (VND)</label>
+            <input type="number" id="m-pay-amount" class="form-control" value="${conNo > 0 ? conNo : 0}" required min="0" />
+          </div>
+          <div style="text-align:right; margin-top:1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.closeModal()">H?y</button>
+            <button type="submit" class="btn btn-primary">Xác Nh?n Thu Ti?n</button>
+          </div>
+        </form>
+      `;
+      document.getElementById('app-modal').style.display = 'flex';
+    };
+
+    window.handleCollectPayment = async function(e, hsId) {
+      e.preventDefault();
+      const s = window._students.find(item => item.hs_id === hsId);
+      if (s) {
+        const addedPay = Number(document.getElementById('m-pay-amount').value) || 0;
+        s.da_thu = (s.da_thu || 0) + addedPay;
+        await window.callBackend('apiSaveStudent', s, false);
+      }
+      window.closeModal();
+      window.renderFinanceUI();
+      window.showToast("Ðã c?p nh?t thông tin thu ti?n h?c phí!", "success");
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const dateElem = document.getElementById('current-date-display');
+      if (dateElem) dateElem.innerText = window.getTodayString();
+      window.initSeedData();
+    });
+  </script>
+</body>
+</html>
