@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chiếc Nón Kỳ Diệu - Gameshow Học Tập Tiểu Học</title>
+    <!-- Thư viện SheetJS hỗ trợ đọc/ghi file Excel .xlsx trực tiếp -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Container Chính Chuẩn Trình Chiếu 16:9 -->
+    <div id="app-viewport">
+
+        <!-- 1. Thanh Công Cụ Trên Cùng Dành Cho Thầy/Cô (Top Header Bar) -->
+        <header class="header-bar">
+            <div class="logo-group">
+                <div class="gameshow-title">
+                    <span>🎡 CHIẾC NÓN KỲ DIỆU</span>
+                    <span class="title-badge">TIỂU HỌC</span>
+                </div>
+                <div id="game-stats-pill" class="text-xs text-slate-300">
+                    Đang nạp dữ liệu lớp học...
+                </div>
+            </div>
+
+            <nav class="top-nav-buttons">
+                <button id="btn-play-intro" class="btn-nav" title="Phát nhạc hiệu mở màn">
+                    🎺 Nhạc Hiệu
+                </button>
+                <button id="btn-open-students" class="btn-nav" title="Quản lý 30 học sinh, giới tính, 20 đồng phục">
+                    👥 Học Sinh (<span id="active-students-badge">30</span>)
+                </button>
+                <button id="btn-open-questions" class="btn-nav" title="Ngân hàng câu hỏi, tải file mẫu, nhập Excel">
+                    ❓ Câu Hỏi & File Mẫu
+                </button>
+                <button id="btn-open-history" class="btn-nav" title="Xem lịch sử các buổi thi đã lưu">
+                    📜 Lịch Sử
+                </button>
+                <button id="btn-leaderboard" class="btn-nav btn-nav-primary" title="Bảng vàng vinh danh & Pháo hoa">
+                    🏆 Bảng Vàng
+                </button>
+                <button id="btn-mute-sound" class="btn-nav" title="Bật/Tắt âm thanh">
+                    🔊 Âm Thanh
+                </button>
+                <button id="btn-fullscreen" class="btn-nav" title="Toàn màn hình trình chiếu 16:9 (F11)">
+                    📺 Toàn Màn Hình
+                </button>
+            </nav>
+        </header>
+
+        <!-- 2. Khu Vực Sân Khấu Chính (Stage Area) -->
+        <main class="stage-section" id="stage-area">
+
+            <!-- MC Ảo Khán Đài (Bên Trái) -->
+            <section class="mc-stage-box" aria-label="MC Sân Khấu">
+                <div class="mc-spotlight"></div>
+                <div class="mc-avatar-wrapper">
+                    <!-- SVG MC Ảo Hoạt Họa Sinh Động -->
+                    <svg viewBox="0 0 100 130" width="110" height="135">
+                        <defs>
+                            <radialGradient id="mcSkin" cx="50%" cy="40%" r="50%">
+                                <stop offset="0%" stop-color="#fff0e6"/>
+                                <stop offset="100%" stop-color="#fed7aa"/>
+                            </radialGradient>
+                            <linearGradient id="mcSuit" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#1e3a8a"/>
+                                <stop offset="100%" stop-color="#0f172a"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Thân & Bộ Vest MC Game Show -->
+                        <path d="M 20,130 C 20,80 80,80 80,130 Z" fill="url(#mcSuit)"/>
+                        <!-- Áo Sơ Mi Trắng & Cà Vạt Đỏ -->
+                        <polygon points="42,88 58,88 50,112" fill="#ffffff"/>
+                        <polygon points="48,88 52,88 54,118 50,124 46,118" fill="#dc2626"/>
+
+                        <!-- Cổ MC -->
+                        <rect x="44" y="74" width="12" height="16" fill="#fed7aa"/>
+
+                        <!-- Khuôn Mặt -->
+                        <circle cx="50" cy="50" r="26" fill="url(#mcSkin)"/>
+                        <!-- Tai -->
+                        <circle cx="24" cy="50" r="5" fill="#fed7aa"/>
+                        <circle cx="76" cy="50" r="5" fill="#fed7aa"/>
+
+                        <!-- Tóc MC Lịch Lãm -->
+                        <path d="M 24,46 C 22,24 40,16 50,16 C 65,16 78,24 76,46 C 70,30 58,32 50,30 C 42,32 30,30 24,46 Z" fill="#334155"/>
+
+                        <!-- Mắt Long Lanh Có Cử Động Nháy -->
+                        <ellipse cx="40" cy="46" rx="3.5" ry="4" fill="#0f172a"/>
+                        <circle cx="39" cy="44.5" r="1.3" fill="#ffffff"/>
+                        <ellipse cx="60" cy="46" rx="3.5" ry="4" fill="#0f172a"/>
+                        <circle cx="59" cy="44.5" r="1.3" fill="#ffffff"/>
+
+                        <!-- Kính Mắt Trí Thức Thân Thiện -->
+                        <circle cx="40" cy="46" r="8" fill="none" stroke="#f59e0b" stroke-width="1.8"/>
+                        <circle cx="60" cy="46" r="8" fill="none" stroke="#f59e0b" stroke-width="1.8"/>
+                        <line x1="48" y1="46" x2="52" y2="46" stroke="#f59e0b" stroke-width="1.8"/>
+
+                        <!-- Lông Mày Vui Vẻ -->
+                        <path d="M 33,38 Q 40,35 46,38" stroke="#334155" stroke-width="2" fill="none" stroke-linecap="round"/>
+                        <path d="M 54,38 Q 60,35 67,38" stroke="#334155" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+                        <!-- Miệng Hoạt Họa Khẩu Hình (ID: mc-mouth) -->
+                        <path id="mc-mouth" d="M 44,53 Q 50,57 56,53" stroke="#b91c1c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+                        <!-- Micro Game Show -->
+                        <line x1="72" y1="95" x2="62" y2="68" stroke="#94a3b8" stroke-width="3"/>
+                        <ellipse cx="60" cy="65" rx="5" ry="6" fill="#475569" stroke="#cbd5e1" stroke-width="1"/>
+                    </svg>
+                </div>
+                <div class="mc-name-tag">🎤 MC Thầy Giáo Ảo</div>
+
+                <!-- Thẻ Hiển Thị Thí Sinh Đang Đứng Trước Khán Đài -->
+                <div class="current-stage-student-card" id="stage-student-card">
+                    <div id="stage-student-avatar"></div>
+                    <div>
+                        <div class="stage-student-name" id="stage-student-name">Chờ quay tên...</div>
+                        <div class="stage-student-score" id="stage-student-score">0 điểm</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Màn Hình LED Lớn Trung Tâm (Big Stage Screen) -->
+            <section class="main-screen-box" id="question-display-board">
+                <div class="screen-top-bar">
+                    <div class="category-tag" id="question-category">Chủ Đề: Sẵn Sàng Khởi Động</div>
+                    <div id="turn-attempt-indicator">
+                        <span class="badge-attempt attempt-1">Lần Trả Lời: 1 / 2</span>
+                    </div>
+                </div>
+
+                <!-- Đồng Hồ 30 Giây Đếm Ngược Hình Tròn SVG -->
+                <div class="timer-widget">
+                    <svg class="timer-svg" width="64" height="64">
+                        <circle class="timer-bg-ring" cx="32" cy="32" r="26"></circle>
+                        <circle class="timer-progress-ring" id="timer-progress-ring" cx="32" cy="32" r="26"></circle>
+                    </svg>
+                    <div class="timer-text-container">
+                        <span class="timer-number" id="timer-number">30</span>
+                    </div>
+                </div>
+
+                <!-- Nội Dung Câu Hỏi -->
+                <div class="question-text-box" id="question-text">
+                    Chào mừng các em học sinh đến với Chiếc Nón Kỳ Diệu! Nhấn "Lượt Mới & Quay Người" để bắt đầu!
+                </div>
+
+                <!-- 4 Phương Án A, B, C, D -->
+                <div class="question-options-grid" id="question-options">
+                    <button class="question-option-btn"><span class="opt-key">A</span> Phương Án A</button>
+                    <button class="question-option-btn"><span class="opt-key">B</span> Phương Án B</button>
+                    <button class="question-option-btn"><span class="opt-key">C</span> Phương Án C</button>
+                    <button class="question-option-btn"><span class="opt-key">D</span> Phương Án D</button>
+                </div>
+
+                <!-- Giải Thích Đáp Án -->
+                <div class="question-explanation-box" id="question-explanation" style="display: none;"></div>
+            </section>
+
+            <!-- Khu Vực Chiếc Nón Kỳ Diệu (Bên Phải) -->
+            <section class="wheel-stage-box" aria-label="Chiếc Nón Kỳ Diệu">
+                <div class="wheel-canvas-wrapper">
+                    <canvas id="wheel-canvas" width="220" height="220"></canvas>
+                </div>
+                <div class="wheel-info-badge">
+                    <span id="wheel-result-badge"><span class="badge-slice" style="background:#eab308;color:#000">100 ĐIỂM</span></span>
+                    <span class="points-pill" id="current-points-value">50 Điểm</span>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- 3. Thanh Thao Tác Chuyên Nghiệp Cho Giáo Viên -->
+        <section class="teacher-action-controls">
+            <button id="btn-next-turn" class="btn-teacher-action btn-action-spin" title="Chọn ngẫu nhiên học sinh & câu hỏi mới">
+                ▶ Lượt Mới & Quay Tên
+            </button>
+            <button id="btn-spin-wheel" class="btn-teacher-action btn-action-spin" title="Quay chiếc nón kỳ diệu để chọn điểm số (Phím Space)">
+                🎡 Quay Nón
+            </button>
+            <button id="btn-start-timer" class="btn-teacher-action btn-action-timer" title="Bắt đầu đồng hồ 30 giây (Phím T)">
+                ⏱️ Bắt Đầu 30s
+            </button>
+            <button id="btn-pause-timer" class="btn-teacher-action btn-action-timer" title="Tạm dừng thời gian">
+                ⏸️ Tạm Dừng
+            </button>
+            <button id="btn-reveal-answer" class="btn-teacher-action btn-action-suspense" title="Hiệu ứng hồi hộp và mở đáp án (Phím R)">
+                🥁 Hồi Hộp & Đáp Án
+            </button>
+            <button id="btn-mark-correct" class="btn-teacher-action btn-action-correct" title="Học sinh trả lời đúng: Cộng điểm, pháo hoa & tự chuyển câu tiếp theo">
+                ✓ Đúng (+Cộng Điểm)
+            </button>
+            <button id="btn-mark-deduct" class="btn-teacher-action btn-action-deduct" title="Trừ điểm thí sinh hiện tại & tự chuyển câu tiếp theo">
+                ➖ Trừ Điểm (-Điểm)
+            </button>
+            <button id="btn-mark-wrong" class="btn-teacher-action btn-action-wrong" title="Học sinh trả lời sai: Chuyển lượt 2 hoặc công bố">
+                ✗ Sai (Cứu Trợ Lần 2)
+            </button>
+        </section>
+
+        <!-- Toast Thông Báo Chuyển Lượt Tự Động -->
+        <div id="auto-advance-toast" class="auto-advance-toast"></div>
+
+        <!-- 4. Dưới Khán Đài: 30 Thí Sinh Ngồi Dự Thi (Audience Grid) -->
+        <footer class="audience-section">
+            <div class="audience-header">
+                <span>DƯỚI KHÁN ĐÀI: CÁC THÍ SINH LỚP HỌC (TỐI ĐA 30 HỌC SINH)</span>
+                <span class="text-xs">💡 Thầy cô có thể click trực tiếp vào bàn để chọn học sinh</span>
+            </div>
+            <div class="audience-grid" id="audience-grid">
+                <!-- Được tạo tự động bởi js/game.js & js/students.js -->
+            </div>
+        </footer>
+
+        <!-- Banner Hồi Hộp Chờ Đáp Án -->
+        <div class="suspense-banner" id="suspense-overlay-banner">
+            ĐÁP ÁN LÀ...
+        </div>
+
+    </div>
+
+    <!-- Canvas Pháo Hoa Toàn Màn Hình Khi Chiến Thắng -->
+    <canvas id="fireworks-canvas"></canvas>
+
+    <!-- =====================================================================
+         MODAL 1: QUẢN LÝ DANH SÁCH 30 HỌC SINH, GIỚI TÍNH & 20 ĐỒNG PHỤC
+         ===================================================================== -->
+    <div class="modal-backdrop" id="modal-students">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div class="modal-title">👥 Quản Lý Thí Sinh Dự Thi (Tối Đa 30 Em)</div>
+                <button class="btn-close-modal" id="btn-close-students">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; gap:8px;">
+                    <div>
+                        <button class="btn-nav" id="btn-select-all-students">✓ Chọn Tất Cả Tham Gia</button>
+                        <button class="btn-nav" id="btn-deselect-all-students">✗ Bỏ Chọn Tất Cả</button>
+                        <button class="btn-nav" id="btn-reset-all-scores">🔄 Đặt Lại Điểm Về 0</button>
+                    </div>
+                    <button class="btn-nav btn-nav-primary" id="btn-add-student">➕ Thêm Học Sinh Mới</button>
+                </div>
+                <div id="students-edit-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-nav btn-nav-primary" onclick="document.getElementById('modal-students').style.display='none'; window.game.renderAudienceSeats();">
+                    Đóng & Áp Dụng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 2: QUẢN LÝ NGÂN HÀNG CÂU HỎI, TẢI FILE MẪU & NHẬP EXCEL
+         ===================================================================== -->
+    <div class="modal-backdrop" id="modal-questions">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div class="modal-title">❓ Ngân Hàng Câu Hỏi & Nhập/Xuất File Mẫu</div>
+                <button class="btn-close-modal" id="btn-close-questions">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-nav btn-nav-primary" id="btn-download-template">
+                            📥 Tải File Mẫu Excel (.xlsx / .csv)
+                        </button>
+                        <label class="btn-nav" style="cursor:pointer;">
+                            📤 Nhập File Excel/CSV
+                            <input type="file" id="input-question-file" accept=".xlsx,.xls,.csv" style="display:none;">
+                        </label>
+                    </div>
+                    <div>
+                        <button class="btn-nav" id="btn-add-question-manual">➕ Thêm Câu Hỏi</button>
+                        <button class="btn-nav" id="btn-reset-questions">🔄 Khôi Phục 15 Câu Mẫu</button>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;">STT</th>
+                                <th style="width:120px;">Chủ Đề</th>
+                                <th>Nội Dung Câu Hỏi</th>
+                                <th style="width:80px;">Đáp Án</th>
+                                <th>Các Phương Án Lựa Chọn</th>
+                                <th style="width:50px;">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questions-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-nav btn-nav-primary" onclick="document.getElementById('modal-questions').style.display='none';">
+                    Hoàn Tất
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 3: LỊCH SỬ CÁC BUỔI THI ĐÃ LƯU
+         ===================================================================== -->
+    <div class="modal-backdrop" id="modal-history">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div class="modal-title">📜 Lịch Sử Các Buổi Thi Gameshow Đã Lưu</div>
+                <button class="btn-close-modal" id="btn-close-history">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+                    <button class="btn-nav text-rose-400" id="btn-clear-history">🗑️ Xóa Toàn Bộ Lịch Sử</button>
+                </div>
+                <div id="history-sessions-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-nav" onclick="document.getElementById('modal-history').style.display='none';">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 4: BẢNG VÀNG THÀNH TÍCH, PODIUM & XUẤT EXCEL CHO GIÁO VIÊN
+         ===================================================================== -->
+    <div class="modal-backdrop" id="leaderboard-modal">
+        <div class="modal-window" style="max-width: 880px;">
+            <div class="modal-header">
+                <div class="modal-title">🏆 BẢNG VÀNG TUYÊN DƯƠNG - CHIẾC NÓN KỲ DIỆU</div>
+                <button class="btn-close-modal" id="btn-close-leaderboard">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Bục Vinh Quang Top 3 (Podium) -->
+                <div class="podium-section" id="podium-container"></div>
+
+                <!-- Bảng Điểm Chi Tiết Toàn Lớp -->
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:60px;">Hạng</th>
+                                <th>Học Sinh</th>
+                                <th style="width:80px;">Giới Tính</th>
+                                <th style="width:100px;">Điểm Số</th>
+                                <th style="width:80px;">Số Câu Đúng</th>
+                                <th style="width:80px;">Số Câu Sai</th>
+                                <th style="width:90px;">Tỷ Lệ Đúng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-nav btn-nav-primary" id="btn-export-excel-report">
+                    📊 Xuất Báo Cáo Excel Cho Giáo Viên (.xlsx)
+                </button>
+                <button class="btn-nav" onclick="document.getElementById('leaderboard-modal').style.display='none'; if(window.fireworks) window.fireworks.stop();">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Các Module Script Tự Chứa Không Phụ Thuộc Mạng Ngoài -->
+    <script src="js/audio.js"></script>
+    <script src="js/students.js"></script>
+    <script src="js/wheel.js"></script>
+    <script src="js/mc.js"></script>
+    <script src="js/questions.js"></script>
+    <script src="js/fireworks.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/modals.js"></script>
+</body>
+</html>
